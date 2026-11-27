@@ -1,0 +1,25 @@
+---
+// 루트(/) 접속 시 브라우저 언어에 따라 /ko/ 또는 /en/ 으로 보낸다.
+// JS가 꺼져 있으면 meta refresh 로 기본 언어(/ko/)로 이동.
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>yhslog</title>
+    <link rel="canonical" href={new URL('/ko/', Astro.site)} />
+    <script is:inline>
+      (() => {
+        const langs = navigator.languages || [navigator.language || 'ko'];
+        const prefersKo = langs.some((l) => String(l).toLowerCase().startsWith('ko'));
+        location.replace(prefersKo ? '/ko/' : '/en/');
+      })();
+    </script>
+    <meta http-equiv="refresh" content="0; url=/ko/" />
+  </head>
+  <body>
+    <a href="/ko/">한국어</a> · <a href="/en/">English</a>
+  </body>
+</html>

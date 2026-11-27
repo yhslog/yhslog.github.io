@@ -1,0 +1,63 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPosts, getTags } from '@/lib/posts';
+import { useT } from '@/i18n/ui';
+import { LANGS, type Lang } from '@/site.config';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const tags = getTags(await getPosts(lang));
+const translations = Object.fromEntries(LANGS.map((l) => [l, `/${l}/tags/`]));
+---
+
+<BaseLayout lang={lang} title={t('tags.title')} translations={translations} nav="tags">
+  <div class="container page">
+    <h1 class="page-title">{t('tags.title')}</h1>
+    <ul class="tags">
+      {
+        tags.map(({ tag, count }) => (
+          <li>
+            <a class="chip chip--round" href={`/${lang}/tags/${tag}/`}>
+              #{tag} <span class="count">{count}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    {tags.length === 0 && <p class="muted">{t('home.empty')}</p>}
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chip {
+    min-height: 44px;
+    gap: 8px;
+    font-size: 15px;
+  }
+  .count {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .muted {
+    color: var(--muted);
+  }
+</style>

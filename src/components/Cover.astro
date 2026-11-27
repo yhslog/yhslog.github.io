@@ -1,0 +1,128 @@
+---
+import { Image } from 'astro:assets';
+import type { Post } from '@/lib/posts';
+
+interface Props {
+  post: Post;
+  size: 'sm' | 'md' | 'lg';
+  /** 대표 이미지 로딩 우선순위 (첫 화면 최상단이면 true) */
+  eager?: boolean;
+  /** 자동 커버 상단에 붙일 문구. 기본은 첫 태그 */
+  label?: string;
+}
+
+const { post, size, eager = false, label } = Astro.props;
+const { cover, coverAlt, coverText, title, tags } = post.data;
+const widths = { sm: 240, md: 720, lg: 1200 };
+---
+
+{
+  cover ? (
+    <Image
+      class:list={['cover', `cover--${size}`, 'cover--image']}
+      src={cover}
+      alt={coverAlt ?? ''}
+      width={widths[size]}
+      loading={eager ? 'eager' : 'lazy'}
+    />
+  ) : (
+    <div class:list={['cover', `cover--${size}`, 'cover--auto']} aria-hidden="true">
+      <span class="cover-label">{label ?? tags[0] ?? ''}</span>
+      <span class="cover-text">{coverText ?? title}</span>
+    </div>
+  )
+}
+
+<style>
+  .cover {
+    display: flex;
+    border-radius: 16px;
+    background: var(--tint);
+    overflow: hidden;
+  }
+  .cover--image {
+    object-fit: cover;
+    background: var(--surface);
+  }
+  .cover--auto {
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+  .cover-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+  }
+  .cover-text {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cover--sm {
+    flex: 0 0 120px;
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .cover--sm .cover-label {
+    font-size: 10px;
+  }
+  .cover--sm .cover-text {
+    font-size: 16px;
+    -webkit-line-clamp: 3;
+  }
+
+  .cover--md {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border-radius: 20px;
+    padding: clamp(18px, 4vw, 36px);
+  }
+  .cover--md .cover-label {
+    font-size: 13px;
+  }
+  .cover--md .cover-text {
+    font-size: clamp(26px, 5vw, 52px);
+    -webkit-line-clamp: 2;
+  }
+
+  .cover--lg {
+    width: 100%;
+    min-height: 340px;
+    height: 100%;
+    border-radius: 20px;
+    padding: 36px;
+  }
+  .cover--lg .cover-label {
+    font-size: 13px;
+  }
+  .cover--lg .cover-text {
+    font-size: clamp(32px, 5vw, 48px);
+    -webkit-line-clamp: 3;
+  }
+  @media (max-width: 640px) {
+    .cover--lg {
+      min-height: 0;
+      aspect-ratio: 16 / 10;
+      padding: 22px;
+    }
+    .cover--sm {
+      flex-basis: 96px;
+      width: 96px;
+      height: 96px;
+    }
+    .cover--sm .cover-text {
+      font-size: 14px;
+    }
+  }
+</style>

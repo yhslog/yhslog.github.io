@@ -1,0 +1,96 @@
+---
+import { postUrl, type Post, type SeriesInfo } from '@/lib/posts';
+import { useT } from '@/i18n/ui';
+import type { Lang } from '@/site.config';
+
+interface Props {
+  series: SeriesInfo;
+  current: Post;
+  lang: Lang;
+}
+const { series, current, lang } = Astro.props;
+const t = useT(lang);
+const index = series.posts.findIndex((p) => p.id === current.id);
+---
+
+<section class="series" aria-labelledby="series-title">
+  <div class="head">
+    <span class="titles">
+      <span class="eyebrow">{t('series.label')}</span>
+      <a id="series-title" class="name" href={`/${lang}/series/${series.id}/`}>{series.title}</a>
+    </span>
+    <span class="count">{index + 1} / {series.posts.length}</span>
+  </div>
+  <ol>
+    {
+      series.posts.map((p) =>
+        p.id === current.id ? (
+          <li class="current" aria-current="page">
+            {p.data.title} <span class="badge">· {t('series.current')}</span>
+          </li>
+        ) : (
+          <li>
+            <a href={postUrl(p)}>{p.data.title}</a>
+          </li>
+        ),
+      )
+    }
+  </ol>
+</section>
+
+<style>
+  .series {
+    border-radius: 20px;
+    background: var(--tint);
+    padding: 24px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .titles {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .name {
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .count {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+  ol {
+    margin: 0;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  ol a {
+    text-decoration: none;
+  }
+  ol a:hover {
+    text-decoration: underline;
+  }
+  .current {
+    font-weight: 700;
+  }
+  .badge {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent-text);
+  }
+</style>
