@@ -18,9 +18,9 @@ export const SITE = {
    */
   giscus: {
     repo: 'yhslog/yhslog.github.io',
-    repoId: '',
+    repoId: 'R_kgDOHIighw',
     category: 'Announcements',
-    categoryId: '',
+    categoryId: 'DIC_kwDOHIigh84DMG0D',
   },
   /** Cloudflare Web Analytics 토큰. 비워 두면 통계 스크립트를 넣지 않는다. */
   cloudflareAnalyticsToken: '',
