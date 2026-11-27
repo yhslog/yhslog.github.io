@@ -1,0 +1,121 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getAllPosts, getSeriesList, postLang, postUrl, type SeriesInfo } from '@/lib/posts';
+import { formatDate, useT } from '@/i18n/ui';
+import { LANGS, type Lang } from '@/site.config';
+
+export async function getStaticPaths() {
+  const all = await getAllPosts();
+  return LANGS.flatMap((lang) =>
+    getSeriesList(all.filter((p) => postLang(p) === lang)).map((series) => ({
+      params: { lang, id: series.id },
+      props: { series },
+    })),
+  );
+}
+
+interface Props {
+  series: SeriesInfo;
+}
+
+const { series } = Astro.props;
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const all = await getAllPosts();
+const translations = Object.fromEntries(
+  LANGS.map((l) => [
+    l,
+    all.some((p) => postLang(p) === l && p.data.series?.id === series.id) ? `/${l}/series/${series.id}/` : `/${l}/series/`,
+  ]),
+);
+---
+
+<BaseLayout lang={lang} title={series.title} translations={translations} nav="series">
+  <div class="container page">
+    <div class="head">
+      <a class="eyebrow back" href={`/${lang}/series/`}>{t('series.label')}</a>
+      <h1 class="page-title">{series.title}</h1>
+      <span class="muted">{series.posts.length} {t('series.count')}</span>
+    </div>
+    <ol class="list">
+      {
+        series.posts.map((p) => (
+          <li>
+            <a href={postUrl(p)} class="item">
+              <span class="num">{p.data.series!.order}</span>
+              <span class="body">
+                <span class="title">{p.data.title}</span>
+                <span class="desc">{p.data.description}</span>
+                <time class="date" datetime={p.data.pubDate.toISOString()}>
+                  {formatDate(p.data.pubDate, lang)}
+                </time>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 800px;
+  }
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .back {
+    text-decoration: none;
+  }
+  .muted {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .item {
+    display: flex;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+  }
+  .num {
+    flex: 0 0 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--tint);
+    color: var(--accent-text);
+    font-family: var(--font-display);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .desc,
+  .date {
+    font-size: 14px;
+    color: var(--muted);
+  }
+</style>

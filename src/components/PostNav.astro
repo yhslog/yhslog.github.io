@@ -1,0 +1,84 @@
+---
+import { postUrl, type Post } from '@/lib/posts';
+import { useT } from '@/i18n/ui';
+import type { Lang } from '@/site.config';
+
+/** 작성 시간 순 이동. 왼쪽 = 다음 글(더 최근), 오른쪽 = 이전 글(더 오래된 글) */
+interface Props {
+  newer?: Post;
+  older?: Post;
+  lang: Lang;
+}
+const { newer, older, lang } = Astro.props;
+const t = useT(lang);
+---
+
+<nav class="post-nav" aria-label={t('post.navLabel')}>
+  {
+    newer ? (
+      <a class="item" href={postUrl(newer)} rel="next">
+        <span class="label">← {t('post.newer')}</span>
+        <span class="title">{newer.data.title}</span>
+      </a>
+    ) : (
+      <span class="item empty">{t('post.newest')}</span>
+    )
+  }
+  {
+    older ? (
+      <a class="item right" href={postUrl(older)} rel="prev">
+        <span class="label">{t('post.older')} →</span>
+        <span class="title">{older.data.title}</span>
+      </a>
+    ) : (
+      <span class="item empty right">{t('post.oldest')}</span>
+    )
+  }
+</nav>
+
+<style>
+  .post-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .item {
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+  }
+  a.item:hover {
+    background: var(--surface);
+  }
+  .right {
+    text-align: right;
+    align-items: flex-end;
+  }
+  .empty {
+    border-style: dashed;
+    font-size: 14px;
+    color: var(--muted);
+    justify-content: center;
+  }
+  .label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  @media (max-width: 640px) {
+    .item {
+      padding: 16px;
+    }
+    .title {
+      font-size: 15px;
+    }
+  }
+</style>

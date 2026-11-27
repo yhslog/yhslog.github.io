@@ -1,0 +1,133 @@
+---
+import '@fontsource-variable/space-grotesk';
+import '@fontsource-variable/jetbrains-mono';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { SITE, LANGS, type Lang } from '@/site.config';
+
+interface Props {
+  lang: Lang;
+  title?: string;
+  description?: string;
+  /** 각 언어 버전의 URL. 언어 전환 버튼과 hreflang 에 쓰인다 */
+  translations?: Partial<Record<Lang, string>>;
+  nav?: 'posts' | 'tags' | 'series' | 'about';
+  image?: string;
+  type?: 'website' | 'article';
+}
+
+const { lang, title, description = '', translations = {}, nav, image, type = 'website' } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+const cfToken = SITE.cloudflareAnalyticsToken;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.title} (${lang})`} href={`/${lang}/rss.xml`} />
+    {
+      LANGS.filter((l) => translations[l]).map((l) => (
+        <link rel="alternate" hreflang={l} href={new URL(translations[l]!, Astro.site)} />
+      ))
+    }
+    <!-- content 는 아래 테마 스크립트가 실제 테마에 맞춰 덮어쓴다 -->
+    <meta name="theme-color" content="#ffffff" />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:title" content={title ?? SITE.title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- 깜빡임 방지: 렌더링 전에 테마 결정 (저장된 선택 > 기기 설정) -->
+    <script is:inline>
+      (() => {
+        let theme = null;
+        try {
+          theme = localStorage.getItem('theme');
+        } catch {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute('content', theme === 'dark' ? '#0d0e11' : '#ffffff');
+      })();
+    </script>
+
+    {
+      cfToken && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: cfToken })}
+        />
+      )
+    }
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{lang === 'ko' ? '본문으로 건너뛰기' : 'Skip to content'}</a>
+    <Header lang={lang} translations={translations} current={nav} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+
+    <script>
+      // 브라우저 UI 색(theme-color)을 사용자가 고른 테마에 맞춘다
+      document.addEventListener('themechange', (e) => {
+        const theme = (e as CustomEvent<string>).detail;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute('content', theme === 'dark' ? '#0d0e11' : '#ffffff');
+      });
+
+      // 기기 설정이 바뀌면, 사용자가 직접 고른 적이 없을 때만 따라간다
+      const media = matchMedia('(prefers-color-scheme: dark)');
+      media.addEventListener('change', (e) => {
+        let saved: string | null = null;
+        try {
+          saved = localStorage.getItem('theme');
+        } catch {}
+        if (saved) return;
+        const theme = e.matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+        document.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -60px;
+    z-index: 100;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--text);
+    color: var(--bg);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    top: 12px;
+  }
+</style>

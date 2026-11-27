@@ -1,0 +1,249 @@
+---
+import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Cover from '@/components/Cover.astro';
+import TocAside from '@/components/TocAside.astro';
+import MobileToc from '@/components/MobileToc.astro';
+import SeriesBox from '@/components/SeriesBox.astro';
+import PostNav from '@/components/PostNav.astro';
+import Comments from '@/components/Comments.astro';
+import {
+  getAllPosts,
+  getPosts,
+  getSeriesList,
+  getTranslations,
+  postLang,
+  postSlug,
+  readingMinutes,
+  type Post,
+} from '@/lib/posts';
+import { formatDate, joinLabel, useT } from '@/i18n/ui';
+import type { Lang } from '@/site.config';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({
+    params: { lang: postLang(post), slug: postSlug(post) },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const { Content, headings } = await render(post);
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const langPosts = await getPosts(lang); // 최신순
+const idx = langPosts.findIndex((p) => p.id === post.id);
+const newer = idx > 0 ? langPosts[idx - 1] : undefined;
+const older = idx >= 0 && idx < langPosts.length - 1 ? langPosts[idx + 1] : undefined;
+
+const series = post.data.series ? getSeriesList(langPosts).find((s) => s.id === post.data.series!.id) : undefined;
+
+const translations = await getTranslations(post);
+const otherLang = (Object.keys(translations) as Lang[]).find((l) => l !== lang);
+const { title, description, pubDate, updatedDate, tags, cover } = post.data;
+// SNS 공유 미리보기용 이미지는 별도로 생성해야 빌드 결과물에 확실히 포함된다
+const ogImage = cover ? (await getImage({ src: cover, width: 1200, format: 'jpg' })).src : undefined;
+---
+
+<BaseLayout
+  lang={lang}
+  title={title}
+  description={description}
+  translations={translations}
+  type="article"
+  image={ogImage}
+>
+  <Fragment slot="head">
+    <meta property="article:published_time" content={pubDate.toISOString()} />
+    {updatedDate && <meta property="article:modified_time" content={updatedDate.toISOString()} />}
+    {tags.map((tag) => <meta property="article:tag" content={tag} />)}
+  </Fragment>
+
+  <div class="read-progress" aria-hidden="true"><span></span></div>
+
+  <div class="container layout">
+    <article class="article" data-article>
+      <header class="post-head">
+        <div class="tagline">
+          {
+            tags.map((tag) => (
+              <a class="tag" href={`/${lang}/tags/${tag}/`}>
+                #{tag}
+              </a>
+            ))
+          }
+          {
+            otherLang && (
+              <>
+                {tags.length > 0 && <span class="dot">·</span>}
+                <a class="other-lang" href={translations[otherLang]} hreflang={otherLang}>
+                  {t('post.readOther')}
+                </a>
+              </>
+            )
+          }
+        </div>
+        <h1 class="title">{title}</h1>
+        <p class="meta">
+          <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
+          {
+            updatedDate && (
+              <>
+                {' '}
+                · {t('post.updated')} <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate, lang)}</time>
+              </>
+            )
+          }
+          {' · '}
+          {readingMinutes(post.body, lang)}
+          {lang === 'ko' ? '' : ' '}
+          {t('post.minRead')}
+        </p>
+        <Cover
+          post={post}
+          size="md"
+          eager
+          label={series ? joinLabel(tags[0], `${series.title} ${post.data.series!.order}/${series.posts.length}`) : undefined}
+        />
+      </header>
+
+      <div class="prose" data-prose>
+        <Content />
+      </div>
+
+      <footer class="post-foot" data-post-end>
+        {
+          tags.length > 0 && (
+            <div class="foot-tags">
+              {tags.map((tag) => (
+                <a class="chip chip--round" href={`/${lang}/tags/${tag}/`}>
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          )
+        }
+        {series && <SeriesBox series={series} current={post} lang={lang} />}
+        <PostNav newer={newer} older={older} lang={lang} />
+        <Comments lang={lang} />
+      </footer>
+    </article>
+
+    <div class="aside-col">
+      <TocAside headings={tocHeadings} lang={lang} />
+    </div>
+  </div>
+
+  <MobileToc headings={tocHeadings} lang={lang} />
+</BaseLayout>
+
+<script>
+  import { initPostPage } from '@/lib/post-client';
+  initPostPage();
+</script>
+
+<style>
+  .read-progress {
+    position: fixed;
+    top: calc(var(--header-h) - 2px);
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 41;
+    pointer-events: none;
+  }
+  .read-progress span {
+    display: block;
+    height: 100%;
+    width: calc(var(--progress, 0) * 100%);
+    background: var(--accent);
+  }
+  .layout {
+    padding-top: 56px;
+    display: flex;
+    gap: 64px;
+    align-items: flex-start;
+  }
+  .article {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .aside-col {
+    flex: 0 0 240px;
+    align-self: stretch;
+  }
+  .post-head {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .tagline {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 14px;
+  }
+  .tag {
+    color: var(--accent-text);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .dot,
+  .other-lang {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .other-lang:hover {
+    color: var(--text);
+  }
+  .title {
+    margin: 0;
+    font-size: clamp(28px, 4.4vw, 40px);
+    line-height: 1.3;
+    letter-spacing: -0.03em;
+  }
+  .meta {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .post-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .foot-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 1023px) {
+    .aside-col,
+    .read-progress {
+      display: none;
+    }
+    .layout {
+      padding-top: 32px;
+    }
+    .article {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+  }
+</style>

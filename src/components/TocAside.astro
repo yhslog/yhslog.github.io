@@ -1,0 +1,89 @@
+---
+import type { MarkdownHeading } from 'astro';
+import { useT } from '@/i18n/ui';
+import type { Lang } from '@/site.config';
+
+interface Props {
+  headings: MarkdownHeading[];
+  lang: Lang;
+}
+const { headings, lang } = Astro.props;
+const t = useT(lang);
+---
+
+<aside class="toc-aside" aria-label={t('post.toc')}>
+  {
+    headings.length > 0 && (
+      <>
+        <span class="eyebrow toc-label">{t('post.onThisPage')}</span>
+        <nav class="toc-links">
+          {headings.map((h) => (
+            <a href={`#${h.slug}`} data-toc-link={h.slug} class:list={[`depth-${h.depth}`]}>
+              {h.text}
+            </a>
+          ))}
+        </nav>
+      </>
+    )
+  }
+  <button type="button" class="top-btn" data-back-to-top>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+    {t('post.backToTop')}
+  </button>
+</aside>
+
+<style>
+  .toc-aside {
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: calc(100vh - var(--header-h) - 64px);
+    overflow-y: auto;
+  }
+  .toc-label {
+    color: var(--muted);
+  }
+  .toc-links {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--border);
+  }
+  .toc-links a {
+    text-decoration: none;
+    padding: 7px 0 7px 16px;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+  .toc-links a.depth-3 {
+    padding-left: 28px;
+    font-size: 13px;
+  }
+  .toc-links a:hover {
+    color: var(--text);
+  }
+  .toc-links a[aria-current='location'] {
+    color: var(--accent-text);
+    font-weight: 700;
+    border-left-color: var(--accent);
+  }
+  .top-btn {
+    margin-top: 12px;
+    align-self: flex-start;
+    min-height: 40px;
+    padding: 0 16px 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+</style>

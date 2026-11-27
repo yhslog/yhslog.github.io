@@ -1,0 +1,32 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout lang="ko" title="404">
+  <div class="container nf">
+    <span class="eyebrow">404</span>
+    <h1 class="page-title">페이지를 찾을 수 없습니다</h1>
+    <p lang="en" class="muted">Page not found.</p>
+    <div class="links">
+      <a class="chip chip--round" href="/ko/">첫 화면으로</a>
+      <a class="chip chip--round" href="/en/" lang="en">Go home</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding-top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .muted {
+    margin: 0;
+    color: var(--muted);
+  }
+  .links {
+    display: flex;
+    gap: 10px;
+  }
+</style>

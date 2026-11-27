@@ -1,0 +1,67 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostGrid from '@/components/PostGrid.astro';
+import { getAllPosts, getTags, postLang, type Post } from '@/lib/posts';
+import { useT } from '@/i18n/ui';
+import { LANGS, type Lang } from '@/site.config';
+
+export async function getStaticPaths() {
+  const all = await getAllPosts();
+  return LANGS.flatMap((lang) => {
+    const posts = all.filter((p) => postLang(p) === lang);
+    return getTags(posts).map(({ tag }) => ({
+      params: { lang, tag },
+      props: { posts: posts.filter((p) => p.data.tags.includes(tag)) },
+    }));
+  });
+}
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+const lang = Astro.params.lang as Lang;
+const tag = Astro.params.tag!;
+const t = useT(lang);
+// 다른 언어에 같은 태그가 있으면 그 태그 페이지로, 없으면 태그 목록으로
+const all = await getAllPosts();
+const translations = Object.fromEntries(
+  LANGS.map((l) => [
+    l,
+    all.some((p) => postLang(p) === l && p.data.tags.includes(tag)) ? `/${l}/tags/${tag}/` : `/${l}/tags/`,
+  ]),
+);
+---
+
+<BaseLayout lang={lang} title={`#${tag}`} translations={translations} nav="tags">
+  <div class="container page">
+    <div class="head">
+      <a class="eyebrow back" href={`/${lang}/tags/`}>{t('tags.title')}</a>
+      <h1 class="page-title">#{tag}</h1>
+      <span class="muted">{posts.length} {lang === 'ko' ? '편' : posts.length === 1 ? 'post' : 'posts'}</span>
+    </div>
+    <PostGrid posts={posts} />
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .back {
+    text-decoration: none;
+  }
+  .muted {
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
