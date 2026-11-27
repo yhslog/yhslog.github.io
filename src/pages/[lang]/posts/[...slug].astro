@@ -19,7 +19,7 @@ import {
   type Post,
 } from '@/lib/posts';
 import { formatDate, joinLabel, useT } from '@/i18n/ui';
-import type { Lang } from '@/site.config';
+import { SITE, type Lang } from '@/site.config';
 
 export async function getStaticPaths() {
   const posts = await getAllPosts();
@@ -51,6 +51,22 @@ const otherLang = (Object.keys(translations) as Lang[]).find((l) => l !== lang);
 const { title, description, pubDate, updatedDate, tags, cover } = post.data;
 // SNS 공유 미리보기용 이미지는 별도로 생성해야 빌드 결과물에 확실히 포함된다
 const ogImage = cover ? (await getImage({ src: cover, width: 1200, format: 'jpg' })).src : undefined;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  inLanguage: lang,
+  keywords: tags.join(', ') || undefined,
+  mainEntityOfPage: pageUrl,
+  url: pageUrl,
+  image: ogImage ? new URL(ogImage, Astro.site).href : undefined,
+  author: { '@type': 'Person', name: SITE.author, url: SITE.social.github },
+  ...(series && { isPartOf: { '@type': 'CreativeWorkSeries', name: series.title } }),
+};
 ---
 
 <BaseLayout
@@ -60,6 +76,7 @@ const ogImage = cover ? (await getImage({ src: cover, width: 1200, format: 'jpg'
   translations={translations}
   type="article"
   image={ogImage}
+  jsonLd={jsonLd}
 >
   <Fragment slot="head">
     <meta property="article:published_time" content={pubDate.toISOString()} />

@@ -22,6 +22,15 @@ export const SITE = {
     category: 'Announcements',
     categoryId: 'DIC_kwDOHIigh84DMG0D',
   },
+  /**
+   * 검색엔진 소유 확인용 메타 태그 값 (HTML 태그 방식의 content 값만).
+   * 비워 두면 태그를 넣지 않는다.
+   */
+  verification: {
+    google: '',
+    naver: '',
+    bing: '',
+  },
   /** Cloudflare Web Analytics 토큰. 비워 두면 통계 스크립트를 넣지 않는다. */
   cloudflareAnalyticsToken: 'a00d48dcef224985b01d23328bcb7ae4',
 } as const;
@@ -29,3 +38,8 @@ export const SITE = {
 export const LANGS = ['ko', 'en'] as const;
 export type Lang = (typeof LANGS)[number];
 export const DEFAULT_LANG: Lang = 'ko';
+
+export const SITE_DESCRIPTION: Record<Lang, string> = {
+  ko: '개발 이야기와 학습 기록, 그리고 이런저런 생각을 적습니다.',
+  en: 'Notes on development, learning, and other thoughts.',
+};

@@ -1,6 +1,6 @@
 # yhslog
 
-개발 이야기와 학습 기록, 그리고 이런저런 생각을 적는 블로그 — https://yhslog.github.io
+개발 이야기와 학습 기록, 그리고 이런저런 생각을 적는 블로그 — https://yhslog.com
 
 [Astro](https://astro.build) 기반 정적 사이트이며 GitHub Actions로 GitHub Pages에 배포한다.
 
@@ -82,6 +82,14 @@ Notion 페이지 → `⋯` → Export → **Markdown & CSV** 로 내보낸 뒤,
 3. [giscus.app](https://giscus.app) 에서 저장소 `yhslog/yhslog.github.io`, 카테고리(Announcements 권장) 선택
 4. 생성된 `data-repo-id`, `data-category-id` 값을 `src/site.config.ts` 에 입력
 
-### 커스텀 도메인으로 옮길 때
+### 도메인
 
-`astro.config.mjs` 의 `site` 를 새 주소로 바꾸고 `public/CNAME` 파일에 도메인을 적는다.
+`yhslog.com` 을 쓴다. 도메인은 저장소 **Settings → Pages → Custom domain** 에서 설정한다
+(GitHub Actions 로 배포하므로 `CNAME` 파일은 필요 없다).
+도메인을 바꿀 때는 `astro.config.mjs` 의 `SITE_URL` 도 함께 바꾼다.
+
+### 검색엔진 등록
+
+Google Search Console / 네이버 서치어드바이저에서 받은 HTML 태그 인증 값(`content="..."` 안의 값)을
+`src/site.config.ts` 의 `verification` 에 넣으면 모든 페이지 `<head>` 에 들어간다.
+사이트맵 주소는 `https://yhslog.com/sitemap-index.xml` 이다.

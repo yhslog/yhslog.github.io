@@ -30,7 +30,13 @@ const translations = Object.fromEntries(
 );
 ---
 
-<BaseLayout lang={lang} title={series.title} translations={translations} nav="series">
+<BaseLayout
+  lang={lang}
+  title={series.title}
+  description={lang === 'ko' ? `시리즈: ${series.title} (${series.posts.length}편)` : `Series: ${series.title} (${series.posts.length} posts)`}
+  translations={translations}
+  nav="series"
+>
   <div class="container page">
     <div class="head">
       <a class="eyebrow back" href={`/${lang}/series/`}>{t('series.label')}</a>
