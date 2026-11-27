@@ -115,6 +115,10 @@ export function initPostPage() {
       if (e.target === sheet) sheet.close();
     });
     for (const a of sheetLinks) a.addEventListener('click', () => sheet.close());
+    // 시트가 열린 채로 데스크톱 폭이 되면(태블릿 회전 등) CSS로 숨겨진 모달이 페이지를 막으므로 닫는다
+    matchMedia('(min-width: 1024px)').addEventListener('change', (e) => {
+      if (e.matches && sheet.open) sheet.close();
+    });
   }
 
   // 코드 복사 버튼

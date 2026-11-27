@@ -190,6 +190,10 @@ button {
   line-height: 1.85;
 }
 
+.prose > :first-child {
+  margin-top: 0;
+}
+
 .prose > * + * {
   margin-top: 1.1em;
 }

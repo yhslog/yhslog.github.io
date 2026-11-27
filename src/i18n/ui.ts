@@ -96,3 +96,8 @@ export function formatDate(date: Date, lang: Lang) {
   }
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
+
+/** 비어 있지 않은 조각만 ' · ' 로 잇는다 (예: 태그가 없을 때 'LATEST · ' 방지) */
+export function joinLabel(...parts: (string | undefined)[]) {
+  return parts.filter(Boolean).join(' · ');
+}

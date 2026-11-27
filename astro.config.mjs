@@ -25,6 +25,8 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
+      // 루트(/)는 언어별 첫 화면으로 보내기만 하는 페이지라 제외
+      filter: (page) => new URL(page).pathname !== '/',
       i18n: {
         defaultLocale: 'ko',
         locales: { ko: 'ko-KR', en: 'en-US' },

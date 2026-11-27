@@ -3,7 +3,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import Cover from '@/components/Cover.astro';
 import PostGrid from '@/components/PostGrid.astro';
 import { getPosts, postUrl } from '@/lib/posts';
-import { formatDate, useT } from '@/i18n/ui';
+import { formatDate, joinLabel, useT } from '@/i18n/ui';
 import { LANGS, SITE, type Lang } from '@/site.config';
 
 export function getStaticPaths() {
@@ -27,7 +27,7 @@ const description =
       latest ? (
         <a href={postUrl(latest)} class="featured">
           <div class="featured-cover">
-            <Cover post={latest} size="lg" eager label={`${t('home.latest')} · ${latest.data.tags[0] ?? ''}`} />
+            <Cover post={latest} size="lg" eager label={joinLabel(t('home.latest'), latest.data.tags[0])} />
           </div>
           <div class="featured-body">
             <span class="meta">
@@ -44,6 +44,8 @@ const description =
       )
     }
 
+    {
+      rest.length > 0 && (
     <section class="recent" aria-labelledby="recent-title">
       <div class="recent-head">
         <h2 id="recent-title" class="recent-title">{t('home.recent')}</h2>
@@ -52,8 +54,10 @@ const description =
           {SITE.pinnedTags.map((tag) => <a class="chip" href={`/${lang}/tags/${tag}/`}>{tag}</a>)}
         </nav>
       </div>
-      {rest.length > 0 ? <PostGrid posts={rest} /> : latest && <p class="empty">—</p>}
+      <PostGrid posts={rest} />
     </section>
+      )
+    }
   </div>
 </BaseLayout>
 
