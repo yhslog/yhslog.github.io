@@ -23,7 +23,7 @@ export const SITE = {
     categoryId: 'DIC_kwDOHIigh84DMG0D',
   },
   /** Cloudflare Web Analytics 토큰. 비워 두면 통계 스크립트를 넣지 않는다. */
-  cloudflareAnalyticsToken: '',
+  cloudflareAnalyticsToken: 'a00d48dcef224985b01d23328bcb7ae4',
 } as const;
 
 export const LANGS = ['ko', 'en'] as const;
