@@ -26,7 +26,7 @@ The config looks roughly like this:
 
 ```js
 export default defineConfig({
-  site: 'https://yhslog.github.io',
+  site: 'https://yhslog.com',
   i18n: {
     locales: ['ko', 'en'],
     defaultLocale: 'ko',

@@ -34,7 +34,13 @@ const translations = Object.fromEntries(
 );
 ---
 
-<BaseLayout lang={lang} title={`#${tag}`} translations={translations} nav="tags">
+<BaseLayout
+  lang={lang}
+  title={`#${tag}`}
+  description={lang === 'ko' ? `#${tag} 태그가 달린 글 ${posts.length}편` : `${posts.length} posts tagged #${tag}`}
+  translations={translations}
+  nav="tags"
+>
   <div class="container page">
     <div class="head">
       <a class="eyebrow back" href={`/${lang}/tags/`}>{t('tags.title')}</a>

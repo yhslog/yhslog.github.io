@@ -14,7 +14,7 @@ const seriesList = getSeriesList(await getPosts(lang));
 const translations = Object.fromEntries(LANGS.map((l) => [l, `/${l}/series/`]));
 ---
 
-<BaseLayout lang={lang} title={t('series.title')} translations={translations} nav="series">
+<BaseLayout lang={lang} title={t('series.title')} description={lang === 'ko' ? '여러 편으로 이어지는 글 모음' : 'Multi-part post series'} translations={translations} nav="series">
   <div class="container page">
     <h1 class="page-title">{t('series.title')}</h1>
     {

@@ -14,7 +14,7 @@ const tags = getTags(await getPosts(lang));
 const translations = Object.fromEntries(LANGS.map((l) => [l, `/${l}/tags/`]));
 ---
 
-<BaseLayout lang={lang} title={t('tags.title')} translations={translations} nav="tags">
+<BaseLayout lang={lang} title={t('tags.title')} description={lang === 'ko' ? '태그별로 모아 본 글 목록' : 'Posts grouped by tag'} translations={translations} nav="tags">
   <div class="container page">
     <h1 class="page-title">{t('tags.title')}</h1>
     <ul class="tags">

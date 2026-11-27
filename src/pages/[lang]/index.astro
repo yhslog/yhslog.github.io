@@ -4,7 +4,7 @@ import Cover from '@/components/Cover.astro';
 import PostGrid from '@/components/PostGrid.astro';
 import { getPosts, postUrl } from '@/lib/posts';
 import { formatDate, joinLabel, useT } from '@/i18n/ui';
-import { LANGS, SITE, type Lang } from '@/site.config';
+import { LANGS, SITE, SITE_DESCRIPTION, type Lang } from '@/site.config';
 
 export function getStaticPaths() {
   return LANGS.map((lang) => ({ params: { lang } }));
@@ -15,13 +15,19 @@ const t = useT(lang);
 const posts = await getPosts(lang);
 const [latest, ...rest] = posts;
 const translations = Object.fromEntries(LANGS.map((l) => [l, `/${l}/`]));
-const description =
-  lang === 'ko'
-    ? '개발 이야기와 학습 기록, 그리고 이런저런 생각을 적습니다.'
-    : 'Notes on development, learning, and other thoughts.';
+const description = SITE_DESCRIPTION[lang];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.title,
+  url: new URL(`/${lang}/`, Astro.site).href,
+  inLanguage: lang,
+  description,
+  author: { '@type': 'Person', name: SITE.author, url: SITE.social.github },
+};
 ---
 
-<BaseLayout lang={lang} description={description} translations={translations} nav="posts">
+<BaseLayout lang={lang} description={description} translations={translations} nav="posts" jsonLd={jsonLd}>
   <div class="container home">
     {
       latest ? (
